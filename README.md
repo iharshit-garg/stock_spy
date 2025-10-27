@@ -3,8 +3,7 @@ This project is created as a part of my journey to become proficient in Python a
 
 ## Requirements:
 - Python > 3.12
-- yfinance
-
+- yfinance <code>pip install yfinance</code>
 ## Project Scope / Features
 ### Basic Version:
 - Enter a stock ticker (e.g., AAPL)
