@@ -18,8 +18,8 @@ def lookup(security_name, instrument_type):
         print(dat.index)
     else:
         print("Wrong Financial Instrument Type")
-        
-def stock(stock_name:
+
+def stock(stock_name):
           pass
           
 if __name__ == "__main__":
