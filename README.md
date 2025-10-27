@@ -1,5 +1,5 @@
 # Stock Spy
-- This project is created as a part of my journey to become proficient in Python and to pivot to quant development.
+This project is created as a part of my journey to become proficient in Python and to pivot to quant development.
 
 ## Requirements:
 - Python > 3.12
