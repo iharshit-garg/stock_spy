@@ -36,7 +36,10 @@ def lookup(security_name):
 
 def stock(stock_name):
     dat = yf.Ticker(stock_name)
-    print(dat.info)
+    
+    for key, value in dat.info.items():
+        print(f"{key} : {value}")
+        print("=====================")
           
 if __name__ == "__main__":
     main()
