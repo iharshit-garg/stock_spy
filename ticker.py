@@ -2,6 +2,21 @@ import yfinance as yf
 
 def ticker(stock_name):
 
+#Keys to print from info dictionary
+    fields = [
+    "previousClose",
+    "open",
+    "dayLow",
+    "dayHigh",
+    "fiftyTwoWeekLow",
+    "fiftyTwoWeekHigh",
+    "allTimeHigh",
+    "allTimeLow",
+    "symbol",
+    "shortName"
+]
+
     dat = yf.Ticker(stock_name)
-    for i in dat.info.keys():
-        print(i,end = "\n\n")
+    
+    for key in fields:
+        print(f"{key}: {dat.info[key]}", end = "\n\n")
