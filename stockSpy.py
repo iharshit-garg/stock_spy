@@ -3,9 +3,9 @@ from lookup import *
 from ticker import *
 
 def main():
-    print("==============")
+    print("=====================")
     print("Welcome to Stock Spy!")
-    print("==============")
+    print("=====================")
 
     NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
     lookup(NAME)
