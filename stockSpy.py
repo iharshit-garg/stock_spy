@@ -1,4 +1,5 @@
 import yfinance as yf
+from lookup import *
 
 def main():
 
@@ -13,33 +14,6 @@ def main():
 
     elif choice == 2:
         stock(NAME)
-
-def lookup(security_name):
-    instrument_type = input("Enter instrument type: ").lower()
-    dat = yf.Lookup(security_name)
-
-    if instrument_type == 'cryptocurrency':
-        print(dat.cryptocurrency['shortName'])
-
-    elif instrument_type == 'etf':
-        print(dat.etf['shortName'])
-
-    elif instrument_type == 'stock':
-        for idx, row in dat.stock.iterrows():   #This loop iterates over dataframe to fetch symbols and the short name of the security. idx -> 'Symbol'
-             print(f"Symbol: {idx}, Short Name: {row['shortName']}")
-
-    elif instrument_type == 'index':
-        print(dat.index['shortName'])
-
-    else:
-        print("Wrong Financial Instrument Type")
-
-def stock(stock_name):
-    dat = yf.Ticker(stock_name)
-    
-    for key, value in dat.info.items():
-        print(f"{key} : {value}")
-        print("=====================")
           
 if __name__ == "__main__":
     main()
