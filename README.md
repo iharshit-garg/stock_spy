@@ -4,6 +4,11 @@ This project is created as a part of my journey to become proficient in Python a
 ## Requirements:
 - Python > 3.12
 - yfinance <code>pip install yfinance</code>
+
+## How to run
+- Clone the git repo
+- Activate the virutal environment <code>source /venv/bin/activate</code>
+- <code>python3 stockSpy.py</code>
 ## Project Scope / Features
 ### Basic Version:
 - Enter a stock ticker (e.g., AAPL)
