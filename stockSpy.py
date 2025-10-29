@@ -1,5 +1,6 @@
 import yfinance as yf
 from lookup import *
+from ticker import *
 
 def main():
 
@@ -13,7 +14,7 @@ def main():
         lookup(NAME)
 
     elif choice == 2:
-        stock(NAME)
+        ticker(NAME)
           
 if __name__ == "__main__":
     main()
