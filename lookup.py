@@ -1,22 +1,18 @@
-import yfinance as yf
+import yfinance as yf   
 
 def lookup(security_name):
     
-    instrument_type = input("Enter instrument type: ").lower()
+    instrumentTypeFields = ['cryptocurrency', 'etf', 'stock', 'index']
     dat = yf.Lookup(security_name)
+    
+    instrument_type = input("Enter instrument type: ").lower()
+    if instrument_type in instrumentTypeFields:
+        result = getattr(dat, instrument_type)
 
-    if instrument_type == 'cryptocurrency':
-        print(dat.cryptocurrency['shortName'])
-
-    elif instrument_type == 'etf':
-        print(dat.etf['shortName'])
-
-    elif instrument_type == 'stock':
-        for idx, row in dat.stock.iterrows():   #This loop iterates over dataframe to fetch symbols and the short name of the security. idx -> 'Symbol'
-             print(f"Symbol: {idx}, Short Name: {row['shortName']}")
-
-    elif instrument_type == 'index':
-        print(dat.index['shortName'])
-
+        i=1
+        #This loop iterates over dataframe to fetch symbols and the short name of the security. idx -> 'Symbol'
+        for idx, row in result.iterrows():
+                print(f"{i}. Symbol: {idx}, Short Name: {row['shortName']}", end="\n\n")
+                i+=1
     else:
-        print("Wrong Financial Instrument Type")
+         print("Invalid type!")
