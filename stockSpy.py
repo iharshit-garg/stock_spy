@@ -10,7 +10,7 @@ def main():
         print("=====================")
         print("1. Get Basic Info")
         print("2. Get Earnings History")
-        print("3. Security Screener")
+        print("3. Asset Screener")
 
         userChoice = int(input("Please select an option: "))
         NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
