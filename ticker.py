@@ -24,3 +24,7 @@ def ticker(stock_name):
 def earningsHistory(stock_name):
     dat = yf.Ticker(stock_name)
     print(dat.earnings_history)
+
+def assetNews(stock_name):
+    dat = yf.Ticker(stock_name)
+    print(dat.news)
