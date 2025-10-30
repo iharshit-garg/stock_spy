@@ -1,7 +1,6 @@
 import yfinance as yf
 from lookup import *
 from ticker import *
-import time
 import sys
 
 def main():
@@ -13,7 +12,6 @@ def main():
         NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
         lookup(NAME)
 
-        time.sleep(5)
         exit_user = input("Do you want to exit [yes/no]: ").lower()
         if exit_user =='yes':
             sys.exit("GoodBye!")
