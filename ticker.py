@@ -20,3 +20,7 @@ def ticker(stock_name):
     
     for key in fields:
         print(f"{key.title()}: {dat.info[key]}", end = "\n\n")
+
+def earningsHistory(stock_name):
+    dat = yf.Ticker(stock_name)
+    print(dat.earnings_history)
