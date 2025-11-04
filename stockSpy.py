@@ -1,6 +1,6 @@
 import yfinance as yf
 from lookup import *
-from ticker import *
+from ticker import Ticker
 import sys
 
 def main():
@@ -18,7 +18,8 @@ def main():
         if userChoice == 1:
             lookup(NAME)
         elif userChoice == 2:
-            earningsHistory(NAME)
+            ticker_instane = Ticker(NAME)
+            ticker_instane.earningsHistory()
         elif userChoice == 3:
             pass
 
