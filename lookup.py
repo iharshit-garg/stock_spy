@@ -1,5 +1,5 @@
 import yfinance as yf
-from ticker import *
+from ticker import Ticker
 
 def lookup(security_name):
     
@@ -24,7 +24,8 @@ def lookup(security_name):
             if 1 <= getSymbol <= len(lookedSymbols):
                 chosen_symbol = lookedSymbols[getSymbol - 1]
                 print(f"You selected: {chosen_symbol}")
-                ticker(chosen_symbol)
+                ticker_instance = Ticker(chosen_symbol)
+                ticker_instance.tickerInfo()
             else:
                  print("Out of range!")
 
