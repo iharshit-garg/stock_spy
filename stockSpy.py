@@ -23,9 +23,13 @@ def main():
         elif userChoice == 3:
             pass
 
-        exit_user = input("Do you want to exit [yes/no]: ").lower()
-        if exit_user == 'yes':
+        exit_user = input("Do you want to exit [[Y]es/[N]o: ").lower()
+        if exit_user in ['yes', 'y']:
             sys.exit("GoodBye!")
+        elif exit_user in ['no', 'n']:
+            continue
+        else:
+            print("\nInvalid Input!\n")
 
 if __name__ == "__main__":
     main()
