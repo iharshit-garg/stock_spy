@@ -18,7 +18,7 @@ class Ticker:
         "fiftyTwoWeekHigh",
         "allTimeHigh",
         "allTimeLow",
-    ]
+        ]
         
         for key in fields:
             print(f"{key.title()}: {self.ticker.info[key]}", end = "\n\n")
