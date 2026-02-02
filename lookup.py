@@ -1,5 +1,4 @@
 import yfinance as yf
-from ticker import Ticker
 
 def lookup(security_name):
     
