@@ -16,6 +16,7 @@ def main():
         fetch_symbol = input("Do you know the symbol of the security you want to look? ").lower()
         if fetch_symbol in ['no', 'n']:
             NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
+            SYMBOL = NAME
         else:
             SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
         
