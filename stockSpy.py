@@ -1,4 +1,3 @@
-import yfinance as yf
 from lookup import *
 from ticker import Ticker
 import sys
@@ -13,13 +12,19 @@ def main():
         print("3. Asset Screener")
 
         userChoice = int(input("Please select an option: "))
-        NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
+
+        fetch_symbol = input("Do you know the symbol of the security you want to look? ").lower()
+        if fetch_symbol in ['no', 'n']:
+            NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
+        else:
+            SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
         
         if userChoice == 1:
-            lookup(NAME)
+            ticker_instance = Ticker(SYMBOL)
+            print("\n")
+            ticker_instance.tickerInfo()
         elif userChoice == 2:
-            ticker_instane = Ticker(NAME)
-            ticker_instane.earningsHistory()
+            pass
         elif userChoice == 3:
             pass
 
