@@ -1,11 +1,10 @@
 import yfinance as yf
 
-def lookup(security_name):
+def lookup(security_name, instrument_type):
     
     instrumentTypeFields = ['cryptocurrency', 'etf', 'stock', 'index']
     dat = yf.Lookup(security_name)
     
-    instrument_type = input("Enter instrument type: ").lower()
     if instrument_type in instrumentTypeFields:
         result = getattr(dat, instrument_type)
 
