@@ -11,8 +11,11 @@ def lookup(security_name):
 
         lookedSymbols = []
         i=1
+        max_items = 10
         #This loop iterates over dataframe to fetch symbols and the short name of the security. idx -> 'Symbol'
         for idx, row in result.iterrows():
+                if i > max_items: #printing only top 10 results
+                     break
                 print(f"{i}. Symbol: {idx}, Short Name: {row['shortName']}", end="\n\n")
                 lookedSymbols.append(idx)
                 i+=1
