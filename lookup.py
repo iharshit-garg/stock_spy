@@ -24,7 +24,7 @@ def lookup(security_name):
             if 1 <= getSymbol <= len(lookedSymbols):
                 chosen_symbol = lookedSymbols[getSymbol - 1]
                 print(f"You selected: {chosen_symbol}")
-                ticker_instance = Ticker(chosen_symbol)
+                ticker_instance = Ticker(chosen_symbol) #calling tickerInfo function from class Ticker to get the basic info
                 ticker_instance.tickerInfo()
             else:
                  print("Out of range!")
