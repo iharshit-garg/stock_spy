@@ -5,7 +5,7 @@ class Ticker:
             self.stock_name = stock_name
             self.ticker = yf.Ticker(stock_name)
 
-    def tickerInfo(self):
+    def get_basic_info(self): #return dict
     #Keys to print from info dictionary
         fields = [
         "symbol",
@@ -20,10 +20,11 @@ class Ticker:
         "allTimeLow",
         ]
         
+        result = {}
         for key in fields:
-            if key in self.ticker.info: #to prevent key error crashes
-                print(f"{key.title()}: {self.ticker.info[key]}", end = "\n\n")
-
+             result[key] = self.ticker.info.get(key, None) #using get() method to prevent key error crashes
+        return result
+    
     def earningsHistory(self):
         print(self.ticker.earnings_history)
 
