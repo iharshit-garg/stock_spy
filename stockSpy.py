@@ -1,4 +1,4 @@
-from lookup import *
+from lookup import lookup
 from ticker import Ticker
 import sys
 
