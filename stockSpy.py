@@ -1,5 +1,6 @@
 from lookup import lookup
 from ticker import Ticker
+from data import get_history
 import sys
 
 def main():
@@ -8,8 +9,7 @@ def main():
         print("Welcome to Stock Spy!")
         print("=====================")
         print("1. Get Basic Info")
-        print("2. Get Earnings History")
-        print("3. Asset Screener")
+        print("2. Get Historic Data")
 
         userChoice = int(input("Please select an option: "))
 
@@ -21,6 +21,7 @@ def main():
         else:
             SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
         
+        #menu choices
         if userChoice == 1:
             ticker_instance = Ticker(SYMBOL)
             print("\n")
@@ -29,9 +30,9 @@ def main():
                 print(f"{k}: {v}")
 
         elif userChoice == 2:
-            pass
-        elif userChoice == 3:
-            pass
+            data_period = input("Enter period (1d, 1mo): ")
+            data_interval = input("Enter interval (1d, 15m): ")
+            print(get_history(SYMBOL, data_period, data_interval))
 
         exit_user = input("\nDo you want to exit [[Y]es/[N]o: ").lower()
         if exit_user in ['yes', 'y']:
