@@ -24,13 +24,16 @@ def main():
         if userChoice == 1:
             ticker_instance = Ticker(SYMBOL)
             print("\n")
-            ticker_instance.tickerInfo()
+            dat = ticker_instance.get_basic_info()
+            for k, v in dat.items(): #using dat.items because by default dictionary returns only keys, items() returne both key and the values
+                print(f"{k}: {v}")
+
         elif userChoice == 2:
             pass
         elif userChoice == 3:
             pass
 
-        exit_user = input("Do you want to exit [[Y]es/[N]o: ").lower()
+        exit_user = input("\nDo you want to exit [[Y]es/[N]o: ").lower()
         if exit_user in ['yes', 'y']:
             sys.exit("GoodBye!")
         elif exit_user in ['no', 'n']:
