@@ -21,7 +21,8 @@ class Ticker:
         ]
         
         for key in fields:
-            print(f"{key.title()}: {self.ticker.info[key]}", end = "\n\n")
+            if key in self.ticker.info: #to prevent key error crashes
+                print(f"{key.title()}: {self.ticker.info[key]}", end = "\n\n")
 
     def earningsHistory(self):
         print(self.ticker.earnings_history)
