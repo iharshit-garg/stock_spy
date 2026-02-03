@@ -30,7 +30,7 @@ def main():
                 print(f"{k}: {v}")
 
         elif userChoice == 2:
-            data_period = input("Enter period (1d, 1mo): ")
+            data_period = input("Enter period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max): ")
             data_interval = input("Enter interval (1d, 15m): ")
             print(get_history(SYMBOL, data_period, data_interval))
 
