@@ -18,8 +18,10 @@ def main():
             NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
             INSTRUMENT_TYPE = input("Enter instrument type: ").lower()
             SYMBOL = lookup(NAME, INSTRUMENT_TYPE)
-        else:
+        elif fetch_symbol in {'yes', 'y'}:
             SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
+        else:
+            sys.exit("Invalid input, please enter [yes/no] OR [y/n]")
         
         #menu choices
         if userChoice == 1:
