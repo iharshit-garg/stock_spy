@@ -36,13 +36,13 @@ def main():
             data_interval = input("Enter interval (1d, 15m): ")
             print(get_history(SYMBOL, data_period, data_interval))
 
-        exit_user = input("\nDo you want to exit [[Y]es/[N]o: ").lower()
+        exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
             sys.exit("GoodBye!")
         elif exit_user in ['no', 'n']:
             continue
         else:
-            print("\nInvalid Input!\n")
+            sys.exit("\nInvalid Input!\n")
 
 if __name__ == "__main__":
     main()
