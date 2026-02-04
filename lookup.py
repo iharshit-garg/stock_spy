@@ -8,16 +8,15 @@ def lookup(security_name, instrument_type):
     dat = yf.Lookup(security_name)
     
     if instrument_type in instrumentTypeFields:
-        result = getattr(dat, instrument_type)
+        lookedSymbols = [] #initalizing list to add searched symbols
+        df = getattr(dat, instrument_type)
 
-        lookedSymbols = []
-        i=1
-        max_items = 10
-        #This loop iterates over dataframe to fetch symbols and the short name of the security. idx -> 'Symbol'
-        for idx, row in result.iterrows():
-                if i > max_items: #printing only top 10 results
-                     break
-                print(f"{i}. Symbol: {idx}, Short Name: {row['shortName']}", end="\n\n")
+        if df is None or df.empty: #checking if the dataframe is empty
+             print("No results")
+        else:
+             i=1
+             for idx, name in df['shortName'].head(10).items():
+                print(i, idx, name)
                 lookedSymbols.append(idx)
                 i+=1
         
