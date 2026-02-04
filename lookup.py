@@ -1,5 +1,4 @@
 import yfinance as yf
-import pandas as pd
 
 def lookup(security_name, instrument_type):
     
