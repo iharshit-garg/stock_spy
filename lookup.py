@@ -13,6 +13,7 @@ def lookup(security_name, instrument_type):
 
         if df is None or df.empty: #checking if the dataframe is empty
              print("No results")
+             return None
         else:
              i=1
              for idx, name in df['shortName'].head(10).items():
@@ -34,4 +35,5 @@ def lookup(security_name, instrument_type):
              print("Invalid!")
 
     else:
-         sys.exit("Invalid type!")
+         print("Invalid type!")
+         return None
