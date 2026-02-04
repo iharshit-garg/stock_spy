@@ -1,4 +1,6 @@
 import yfinance as yf
+import sys
+import pandas as pd
 
 def lookup(security_name, instrument_type):
     
@@ -33,4 +35,4 @@ def lookup(security_name, instrument_type):
              print("Invalid!")
 
     else:
-         print("Invalid type!")
+         sys.exit("Invalid type!")
