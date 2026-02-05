@@ -8,8 +8,8 @@ def main():
         print("=====================")
         print("Welcome to Stock Spy!")
         print("=====================")
-        print("[1]. Get Basic Info")
-        print("[2]. Get Historic Data")
+        print("[1]. Basic Info")
+        print("[2]. Historical Prices")
 
         userChoice = int(input("Please select an option: ")) #asking for user choice from the menu, user has to enter a number
 
