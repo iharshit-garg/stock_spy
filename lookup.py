@@ -10,7 +10,6 @@ def lookup(security_name: str, instrument_type: str):
         df = getattr(dat, instrument_type)
 
         if df is None or df.empty: #checking if the dataframe is empty
-             print("\nNo results\n")
              return None #returning none so that cli can decide what to show to the user
         else:
              i = 1
