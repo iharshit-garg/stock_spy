@@ -19,12 +19,15 @@ def main():
             INSTRUMENT_TYPE = input("Enter instrument type: ").lower()
 
             SYMBOL = lookup(NAME, INSTRUMENT_TYPE) #assigning returned symbol to a variable
+            if SYMBOL is None:
+                continue
 
         elif fetch_symbol in {'yes', 'y'}:
             SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
 
         else:
-            sys.exit("Invalid input, please enter [yes/no] OR [y/n]")
+            print("\nInvalid input, please enter [yes/no] OR [y/n]\n")
+            continue
         
         #configuring menu choices
         if userChoice == 1: #get basic info
