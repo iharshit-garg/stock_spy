@@ -33,5 +33,5 @@ def lookup(security_name: str, instrument_type: str):
              print("Invalid!")
 
     else:
-     print("Invalid type!")
+     print("\nInvalid type!\n")
      return None
