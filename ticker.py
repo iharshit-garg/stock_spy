@@ -24,9 +24,3 @@ class Ticker:
         for key in fields:
              result[key] = self.ticker.info.get(key, None) #using get() method to prevent key error crashes
         return result
-    
-    def earningsHistory(self):
-        print(self.ticker.earnings_history)
-
-    def assetNews(self):
-        print(self.ticker.news)
