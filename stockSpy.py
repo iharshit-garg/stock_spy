@@ -40,7 +40,9 @@ def main():
         elif userChoice == 2: #historic data    
             data_period = input("Enter period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max): ")
             data_interval = input("Enter interval (1d, 15m): ")
-            print(get_history(SYMBOL, data_period, data_interval))
+            hist_data = get_history(SYMBOL, data_period, data_interval)
+            if hist_data is None:
+                continue
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
