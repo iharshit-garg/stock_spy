@@ -13,36 +13,37 @@ def main():
 
         userChoice = int(input("Please select an option: ")) #asking for user choice from the menu, user has to enter a number
 
+        SYMBOL = None
         fetch_symbol = input("Do you know the symbol of the security you want to look? ").lower() #asking if user wants to search the security symbol
         if fetch_symbol in ['no', 'n']:
             NAME = input("Enter stock name (Ex: Apple, Nvidia): ").lower()
             INSTRUMENT_TYPE = input("Enter instrument type: ").lower()
 
             SYMBOL = lookup(NAME, INSTRUMENT_TYPE) #assigning returned symbol to a variable
-            if SYMBOL is None:
-                continue
+            if SYMBOL is None: #checking if lookup returns None
+                print("\nSymbol Not found!")
 
         elif fetch_symbol in {'yes', 'y'}:
             SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
 
         else:
             print("\nInvalid input, please enter [yes/no] OR [y/n]\n")
-            continue
         
-        #configuring menu choices
-        if userChoice == 1: #get basic info
-            ticker_instance = Ticker(SYMBOL)
-            print("\n")
-            dat = ticker_instance.get_basic_info()
-            for k, v in dat.items(): #using dat.items because by default dictionary returns only keys, items() returne both key and the values
-                print(f"{k}: {v}")
+        if SYMBOL is not None: #checking if the symbol is not found by the lookup function
+            #configuring menu choices
+            if userChoice == 1: #get basic info
+                ticker_instance = Ticker(SYMBOL)
+                print("\n")
+                dat = ticker_instance.get_basic_info()
+                for k, v in dat.items(): #using dat.items because by default dictionary returns only keys, items() returne both key and the values
+                    print(f"{k}: {v}")
 
-        elif userChoice == 2: #historic data    
-            data_period = input("Enter period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max): ")
-            data_interval = input("Enter interval (1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo): ")
-            hist_data = get_history(SYMBOL, data_period, data_interval)
-            if hist_data is None:
-                continue
+            elif userChoice == 2: #historic data    
+                data_period = input("Enter period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max): ")
+                data_interval = input("Enter interval (1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo): ")
+                hist_data = get_history(SYMBOL, data_period, data_interval)
+                if hist_data is None:
+                    continue
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
