@@ -34,6 +34,7 @@ def main():
             print("\nInvalid input, please enter [yes/no] OR [y/n]\n")
         
         if SYMBOL is not None: #checking if the symbol is not found by the lookup function
+            SYMBOL = SYMBOL.upper() #if lowercase, convert it to uppercase
             #configuring menu choices
             if userChoice == 1: #get basic info
                 ticker_instance = Ticker(SYMBOL)
@@ -52,6 +53,12 @@ def main():
                     print(f"Total number of rows: {hist_data.shape[0]}\n")
                     print(f"First bar:\n\n{hist_data.head(1)}\n")
                     print(f"Last bar:\n\n{hist_data.tail(1)}")
+
+                    #dataframe is multiIndex
+                    print()
+                    print(f"Highest High: {hist_data[SYMBOL]["High"].max()}\n")
+                    print(f"Lowest Low: {hist_data[SYMBOL]["Low"].min()}\n")
+                    print(f"Average Close: {hist_data[SYMBOL]["Close"].mean()}")
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
