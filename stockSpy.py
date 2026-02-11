@@ -49,7 +49,9 @@ def main():
                 if hist_data is None:
                     print("No data found!")
                 else:
-                    print(hist_data)
+                    print(f"Total number of rows: {hist_data.shape[0]}\n")
+                    print(f"First bar:\n\n{hist_data.head(1)}\n")
+                    print(f"Last bar:\n\n{hist_data.tail(1)}")
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
