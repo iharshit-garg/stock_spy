@@ -11,7 +11,11 @@ def main():
         print("[1]. Basic Info")
         print("[2]. Historical Prices")
 
-        userChoice = int(input("Please select an option: ")) #asking for user choice from the menu, user has to enter a number
+        try:
+            userChoice = int(input("Please select an option: ")) #asking for user choice from the menu, user has to enter a number
+        except ValueError:
+            print("\nInvalid input! Only number is accepted.\n")
+            continue
 
         SYMBOL = None
         fetch_symbol = input("Do you know the symbol of the security you want to look? ").lower() #asking if user wants to search the security symbol
@@ -44,6 +48,8 @@ def main():
                 hist_data = get_history(SYMBOL, data_period, data_interval)
                 if hist_data is None:
                     print("No data found!")
+                else:
+                    print(hist_data)
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
