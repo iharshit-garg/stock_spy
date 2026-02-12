@@ -16,7 +16,8 @@ def main():
         except ValueError:
             print("\nInvalid input! Only number is accepted.\n")
             continue
-
+        
+        multiple_symbols = False #boolean value to check if user enter multiple tickers
         SYMBOL = None
         fetch_symbol = input("Do you know the symbol of the security you want to look? ").lower() #asking if user wants to search the security symbol
         if fetch_symbol in ['no', 'n']:
@@ -34,6 +35,11 @@ def main():
             print("\nInvalid input, please enter [yes/no] OR [y/n]\n")
         
         if SYMBOL is not None: #checking if the symbol is not found by the lookup function
+            if len(SYMBOL.split(",")) > 1:
+                multiple_symbols = True
+                print("\nMulti-ticker search is not supported yet. This funtionality will be added in future.\n")
+                continue
+
             SYMBOL = SYMBOL.upper() #if lowercase, convert it to uppercase
             #configuring menu choices
             if userChoice == 1: #get basic info
@@ -50,15 +56,24 @@ def main():
                 if hist_data is None:
                     print("No data found!")
                 else:
-                    print(f"Total number of rows: {hist_data.shape[0]}\n")
-                    print(f"First bar:\n\n{hist_data.head(1)}\n")
-                    print(f"Last bar:\n\n{hist_data.tail(1)}")
+                    if multiple_symbols == True:
+                        continue
+                        '''
+                        # if dataframe is multiIndex
+                        for ticker in SYMBOL.split(","):
+                            print()
+                            print(f"Highest High: {hist_data[ticker]["High"].max()}\n")
+                            print(f"Lowest Low: {hist_data[ticker]["Low"].min()}\n")
+                            print(f"Average Close: {hist_data[ticker]["Close"].mean()}")
+                        '''
 
-                    #dataframe is multiIndex
-                    print()
-                    print(f"Highest High: {hist_data[SYMBOL]["High"].max()}\n")
-                    print(f"Lowest Low: {hist_data[SYMBOL]["Low"].min()}\n")
-                    print(f"Average Close: {hist_data[SYMBOL]["Close"].mean()}")
+                    else:
+                        print(f"Total number of rows: {hist_data.shape[0]}\n")
+                        print(f"First bar:\n\n{hist_data.head(1)}\n")
+                        print(f"Last bar:\n\n{hist_data.tail(1)}\n")
+                        print(f"Highest High: {hist_data["High"].max()}\n")
+                        print(f"Lowest Low: {hist_data["Low"].min()}\n")
+                        print(f"Average Close: {hist_data["Close"].mean()}")
                     
                     #saving data
                     get_file_name = f"{SYMBOL}_{data_period}_{data_interval}.csv" #file name: symbol_period_interval.csv
