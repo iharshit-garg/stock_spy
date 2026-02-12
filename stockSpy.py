@@ -1,6 +1,6 @@
 from lookup import lookup
 from ticker import Ticker
-from data import get_history
+from data import get_history, save_data
 import sys
 
 def main():
@@ -59,6 +59,10 @@ def main():
                     print(f"Highest High: {hist_data[SYMBOL]["High"].max()}\n")
                     print(f"Lowest Low: {hist_data[SYMBOL]["Low"].min()}\n")
                     print(f"Average Close: {hist_data[SYMBOL]["Close"].mean()}")
+                    
+                    #saving data
+                    get_file_name = f"{SYMBOL}_{data_period}_{data_interval}.csv" #file name: symbol_period_interval.csv
+                    save_data(hist_data, get_file_name)
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
