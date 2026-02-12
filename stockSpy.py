@@ -28,7 +28,7 @@ def main():
             if SYMBOL is None: #checking if lookup returns None
                 print("\nSymbol Not found!")
 
-        elif fetch_symbol in {'yes', 'y'}:
+        elif fetch_symbol in ['yes', 'y']:
             SYMBOL = input("Enter the Symbol (Ex: AAPL, VOOG): ")
 
         else:
