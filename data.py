@@ -1,6 +1,6 @@
 import yfinance as yf
 
-def get_history(stock_name, period = None, interval = "1d", auto_adjust = True, group_by = 'ticker', progress = False):
+def get_history(stock_name, period = "1mo", interval = "1d", auto_adjust = True, group_by = 'ticker', progress = False):
     dat = yf.Tickers(stock_name)
 
     if len(stock_name.split(",")) > 1:
