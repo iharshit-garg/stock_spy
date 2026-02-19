@@ -28,3 +28,19 @@ def get_history(stock_name, period = "1mo", interval = "1d", auto_adjust = True,
 def save_data(df, file_name):
     df.to_csv(file_name)
     print(f"The data you requested is saved in {file_name}")
+
+def stats(df) -> dict[str, float]:
+    daily_returns = df['Close'].pct_change().dropna(how = 'all') #selecting column 'Close' and printing daily change decimal values
+    
+    volatility = daily_returns.std() #selecting column 'Close' and printing standard deviation
+    annualized_volatility = volatility*(252**0.5) #printing annual volatility by multiplying by total trading days in a year
+
+    running_peak = df['Close'].cummax()
+    drawdown = (df['Close'] - running_peak) / running_peak
+    max_drawdown = drawdown.min()
+
+    return {
+        "volatility": float(volatility),
+        "annualized_volatility": float(annualized_volatility),
+        "max_drawdown": float(max_drawdown)
+    }

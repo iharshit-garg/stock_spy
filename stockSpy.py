@@ -1,6 +1,6 @@
 from lookup import lookup
 from ticker import Ticker
-from data import get_history, save_data
+from data import get_history, save_data, stats
 import sys
 
 def main():
@@ -78,6 +78,15 @@ def main():
                     #saving data
                     get_file_name = f"{SYMBOL}_{data_period}_{data_interval}.csv" #file name: symbol_period_interval.csv
                     save_data(hist_data, get_file_name)
+
+                    #printing volatility, annualized volatility, and max drawdown
+                    print("\n")
+                    percentage_fields = {"volatility", "annualized_volatility", "max_drawdown"}
+                    for k, v in stats(hist_data).items():
+                        if k in percentage_fields:
+                            print(f"{k}: {v:.2%}")
+                        else:
+                            print(f"{k}: {v}")
 
         exit_user = input("\nDo you want to exit ([Y]es/[N]o): ").lower()
         if exit_user in ['yes', 'y']:
