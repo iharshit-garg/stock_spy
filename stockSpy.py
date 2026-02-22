@@ -12,7 +12,7 @@ def main():
         print("[2]. Historical Prices")
 
         try:
-            userChoice = int(input("Please select an option: ")) #asking for user choice from the menu, user has to enter a number
+            user_choice = int(input("Please select an option: ")) #asking for user choice from the menu, user has to enter a number
         except ValueError:
             print("\nInvalid input! Only number is accepted.\n")
             continue
@@ -42,14 +42,14 @@ def main():
 
             SYMBOL = SYMBOL.upper() #if lowercase, convert it to uppercase
             #configuring menu choices
-            if userChoice == 1: #get basic info
+            if user_choice == 1: #get basic info
                 ticker_instance = Ticker(SYMBOL)
                 print("\n")
                 dat = ticker_instance.get_basic_info()
                 for k, v in dat.items(): #using dat.items because by default dictionary returns only keys, items() returne both key and the values
                     print(f"{k}: {v}")
 
-            elif userChoice == 2: #historic data    
+            elif user_choice == 2: #historic data    
                 data_period = input("Enter period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max): ")
                 data_interval = input("Enter interval (1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo): ")
                 hist_data = get_history(SYMBOL, data_period, data_interval)

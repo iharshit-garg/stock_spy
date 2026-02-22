@@ -2,11 +2,11 @@ import yfinance as yf
 
 def lookup(security_name: str, instrument_type: str):
     
-    instrumentTypeFields = ['cryptocurrency', 'etf', 'stock', 'index'] #supported instrument types
+    instrument_types = ['cryptocurrency', 'etf', 'stock', 'index'] #supported instrument types
     dat = yf.Lookup(security_name)
     
-    if instrument_type in instrumentTypeFields:
-        lookedSymbols = [] #initalizing list to add searched symbols
+    if instrument_type in instrument_types:
+        looked_symbols = [] #initalizing list to add searched symbols
         df = getattr(dat, instrument_type)
 
         if df is None or df.empty: #checking if the dataframe is empty
@@ -15,14 +15,14 @@ def lookup(security_name: str, instrument_type: str):
              i = 1
              for idx, name in df['shortName'].head(10).items(): #getting shortName field from the dataframe, showing only top 10 items
                 print(i, idx, name)
-                lookedSymbols.append(idx)
+                looked_symbols.append(idx)
                 i += 1
         
-        getSymbol = input(f"Select a number (1-{len(lookedSymbols)}): ")
+        get_symbol = input(f"Select a number (1-{len(looked_symbols)}): ")
         try:
-            getSymbol = int(getSymbol) #type -> int
-            if 1 <= getSymbol <= len(lookedSymbols):
-                chosen_symbol = lookedSymbols[getSymbol - 1]
+            get_symbol = int(get_symbol) #type -> int
+            if 1 <= get_symbol <= len(looked_symbols):
+                chosen_symbol = looked_symbols[get_symbol - 1]
                 print(f"You selected: {chosen_symbol}")
                 return chosen_symbol #return symbol so that stockSpy can pass the symbol to get the info
             else:
