@@ -2,6 +2,7 @@ from lookup import lookup
 from ticker import Ticker
 from data import get_history, save_data, stats
 import argparse, sys, time, os
+from typing import *
 
 def resolve_symbol(symbol = None, name = None) -> List:
     if symbol:
@@ -22,55 +23,55 @@ def resolve_symbol(symbol = None, name = None) -> List:
 def get_basic_info(args):
     symbol = resolve_symbol(symbol = args.symbol, name = args.name)
     #checking for multi-ticker
-    if len(symbol) >= 1:
-        for i in range(len(symbol)):
-            print(f"\n⏳ Fetching data for '{symbol[i]}'\n")
+    for i in range(len(symbol)):
+        print(f"\n⏳ Fetching data for '{symbol[i]}'\n")
+        if i > 0:
             time.sleep(12) #to prevent rate limiting, wait 12 seconds
 
-            #calling ticker class
-            ticker_instance = Ticker(symbol[i])
-            data = ticker_instance.get_basic_info()
-            print(f"{symbol[i]}: ✅ fetched")
-            for k, v in data.items():
-                print(f"{k}: {v}")
+        #calling ticker class
+        ticker_instance = Ticker(symbol[i])
+        data = ticker_instance.get_basic_info()
+        print(f"{symbol[i]}: ✅ fetched")
+        for k, v in data.items():
+            print(f"{k}: {v}")
 
 def get_historical_data(args):
     symbol = resolve_symbol(symbol = args.symbol, name = args.name)
     #checking for multi-ticker
-    if len(symbol) > 1:
-        for i in range(len(symbol)):
-            print(f"\n⏳ Fetching historical data for '{symbol[i]}'\n")
+    for i in range(len(symbol)):
+        print(f"\n⏳ Fetching historical data for '{symbol[i]}'\n")
+        if i > 0:
             time.sleep(12) #to prevent rate limiting, wait 12 seconds
 
-            #calling get_history
-            hist_data = get_history(stock_name = symbol[i], timespan = args.timespan, from_date = args.start, to_date = args.end, multiplier = args.multiplier)
+        #calling get_history
+        hist_data = get_history(stock_name = symbol[i], timespan = args.timespan, from_date = args.start, to_date = args.end, multiplier = args.multiplier)
+        
+        #if function return None, show error
+        if hist_data is None :
+            sys.exit(f"No data found for {symbol[i]}")
+        else:
+            print(f"First bar:\n\n{hist_data.head(1)}\n")
+            print(f"Last bar:\n\n{hist_data.tail(1)}\n")
+            print(f"Highest High: {hist_data["High"].max()}")
+            print(f"Lowest Low: {hist_data["Low"].min()}")
+            print(f"Average Close: {hist_data["Close"].mean()}")
             
-            #if function return None, show error
-            if hist_data is None :
-                sys.exit(f"No data found for {symbol[i]}")
-            else:
-                print(f"First bar:\n\n{hist_data.head(1)}\n")
-                print(f"Last bar:\n\n{hist_data.tail(1)}\n")
-                print(f"Highest High: {hist_data["High"].max()}")
-                print(f"Lowest Low: {hist_data["Low"].min()}")
-                print(f"Average Close: {hist_data["Close"].mean()}")
-                
-                #volatility, annualized volatility, and max drawdown
-                percentage_fields = {"volatility", "annualized_volatility", "max_drawdown"}
-                for k, v in stats(hist_data).items():
-                    if k in percentage_fields:
-                        print(f"{k}: {v:.2%}")
-                    else:
-                        print(f"{k}: {v}")
+            #volatility, annualized volatility, and max drawdown
+            percentage_fields = {"volatility", "annualized_volatility", "max_drawdown"}
+            for k, v in stats(hist_data).items():
+                if k in percentage_fields:
+                    print(f"{k}: {v:.2%}")
+                else:
+                    print(f"{k}: {v}")
 
-                #saving data
-                print("\n📁 Saving data...\n")
-                time.sleep(3)
-                folder = "./data"
-                os.makedirs(folder, exist_ok = True) #ensure the folder exists
-                file = f"{symbol[i]}_{args.start}_{args.end}_{args.timespan}.csv"
-                file_path = os.path.join(folder, file)
-                save_data(hist_data, file_path)
+            #saving data
+            print("\n📁 Saving data...\n")
+            time.sleep(3)
+            folder = "./data"
+            os.makedirs(folder, exist_ok = True) #ensure the folder exists
+            file = f"{symbol[i]}_{args.start}_{args.end}_{args.timespan}.csv"
+            file_path = os.path.join(folder, file)
+            save_data(hist_data, file_path)
 
 def main():
     parser = argparse.ArgumentParser(
