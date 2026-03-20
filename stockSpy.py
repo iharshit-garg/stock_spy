@@ -48,7 +48,8 @@ def get_historical_data(args):
         
         #if function return None, show error
         if hist_data is None :
-            sys.exit(f"No data found for {symbol[i]}")
+            print(f"No data found for {symbol[i]}")
+            continue
         else:
             print(f"First bar:\n\n{hist_data.head(1)}\n")
             print(f"Last bar:\n\n{hist_data.tail(1)}\n")
