@@ -1,33 +1,42 @@
-import yfinance as yf
+from client import client
+import pandas as pd
 
-def get_history(stock_name, period = "1mo", interval = "1d", auto_adjust = True, group_by = 'ticker', progress = False):
-    dat = yf.Tickers(stock_name)
+def get_history(stock_name: str, from_date, to_date, timespan = "day", multiplier = 1) -> pd.DataFrame:
+    aggs = []
+    for a in client.list_aggs(
+        ticker = stock_name,
+        timespan = timespan,
+        from_ = from_date,
+        to = to_date,
+        adjusted = True,
+        sort = "asc",
+        multiplier = multiplier
+    ):
+        aggs.append(a)
 
-    if len(stock_name.split(",")) > 1:
-        result_tickers =  dat.history(
-            period = period,
-            interval = interval,
-            auto_adjust = auto_adjust,
-            group_by = group_by,
-            progress = progress
-            )
-        result = result_tickers
+    #if aggs is not empty, create a list of dictionaries
+    data = []        
+    if aggs:
+        for a in aggs:
+            data.append({
+                'Date': pd.to_datetime(a.timestamp, unit = 'ms'),
+                'Open': a.open,
+                'High': a.high,
+                'Low': a.low,
+                'Close': a.close,
+                'Volume': a.volume
+            })
+        #creating data frame
+        df = pd.DataFrame(data)
+        df = df.set_index('Date').sort_index(ascending = True)
+        return df
+    
     else:
-        result_ticker =  yf.Ticker(stock_name).history(
-            period = period,
-            interval = interval,
-            auto_adjust = auto_adjust
-            )
-        result = result_ticker
-
-    if result is None or result.empty:#checking if the dataframe is empty
         return None
-    else:
-        return result
 
 def save_data(df, file_name):
     df.to_csv(file_name)
-    print(f"The data you requested is saved in {file_name}")
+    print(f"The data you requested is saved in {file_name}\n")
 
 def stats(df) -> dict[str, float]:
     daily_returns = df['Close'].pct_change().dropna(how = 'all') #selecting column 'Close' and printing daily change decimal values
