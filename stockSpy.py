@@ -62,7 +62,10 @@ def get_historical_data(args):
                 if k in percentage_fields:
                     print(f"{k}: {v:.2%}")
                 else:
-                    print(f"{k}: {v}")
+                    if k == "sharpe_ratio":
+                        print(f"{k}: {v:.2f}")
+                    else:
+                        print(f"{k}: {v}")
 
             #saving data
             print("\n📁 Saving data...\n")

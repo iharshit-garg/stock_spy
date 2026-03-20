@@ -48,8 +48,12 @@ def stats(df) -> dict[str, float]:
     drawdown = (df['Close'] - running_peak) / running_peak
     max_drawdown = drawdown.min()
 
+    daily_sharpe = daily_returns.mean() / volatility #risk free rate = 0
+    share_ratio = daily_sharpe * (252 ** 0.5)
+
     return {
         "volatility": float(volatility),
         "annualized_volatility": float(annualized_volatility),
-        "max_drawdown": float(max_drawdown)
+        "max_drawdown": float(max_drawdown),
+        "sharpe_ratio": float(share_ratio)
     }
