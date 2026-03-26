@@ -2,6 +2,7 @@ import os
 import psycopg2
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
+import pandas as pd
 
 load_dotenv()
 
@@ -65,18 +66,18 @@ def upsert_instrument(symbol: str, name: str = None, asset_class: str = None, ex
 
 def upsert_bars(df, symbol: str, timespan: str = "day"):
     rows = [
-        (
-            symbol,
-            index,
-            timespan,
-            row["open"],
-            row["high"],
-            row["low"],
-            row["close"],
-            row["volume"],
-        )
-        for index, row in df.iterrows()
+    (
+        symbol, 
+        index, timespan, 
+        float(row["Open"]),
+        float(row["High"]), 
+        float(row["Low"]), 
+        float(row["Close"]), 
+        float(row["Volume"])
+    )
+    for index, row in df.iterrows()
     ]
+
     sql = """
         INSERT INTO ohlcv_bars (symbol, timestamp, timespan, open, high, low, close, volume)
         VALUES %s
@@ -86,6 +87,29 @@ def upsert_bars(df, symbol: str, timespan: str = "day"):
         with conn.cursor() as cur:
             execute_values(cur, sql, rows)
         conn.commit()
+
+def get_bars(symbol: str, start: str, end: str, timespan: str = "day") -> pd.DataFrame:
+    sql = """
+        SELECT timestamp, open, high, low, close, volume
+        FROM ohlcv_bars
+        WHERE symbol = %s
+            AND timespan = %s
+            AND timestamp >= %s
+            AND timestamp <= %s
+        ORDER BY timestamp ASC;
+        """
+    
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (symbol, timespan, start, end))
+            rows = cur.fetchall()
+        
+    if not rows:
+        return None
+    
+    df = pd.DataFrame(rows, columns = ["Date", "Open", "High", "Low", "Close", "Volume"])
+    df = df.set_index("Date").sort_index(ascending = True)
+    return df
 
 if __name__ == "__main__":
     create_tables()

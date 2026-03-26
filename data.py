@@ -1,5 +1,6 @@
 from client import client
 import pandas as pd
+import db
 
 def get_history(stock_name: str, from_date, to_date, timespan = "day", multiplier = 1) -> pd.DataFrame:
     aggs = []
@@ -34,9 +35,15 @@ def get_history(stock_name: str, from_date, to_date, timespan = "day", multiplie
     else:
         return None
 
-def save_data(df, file_name):
-    df.to_csv(file_name)
-    print(f"The data you requested is saved in {file_name}\n")
+def save_data(df, symbol: str, timespan: str = "day", export_csv: bool = False, csv_path: str = None):
+    #save to csv
+    if export_csv:
+        df.to_csv(csv_path)
+        print(f"The data you requested is saved in {csv_path}\n")
+    else:
+        #save to db
+        db.upsert_bars(df, symbol, timespan)
+        print(f"Data saved to database for {symbol}.")
 
 def stats(df) -> dict[str, float]:
     daily_returns = df['Close'].pct_change().dropna(how = 'all') #selecting column 'Close' and printing daily change decimal values

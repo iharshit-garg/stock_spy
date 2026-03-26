@@ -3,6 +3,7 @@ from ticker import Ticker
 from data import get_history, save_data, stats
 import argparse, sys, time, os
 from typing import *
+from db import upsert_instrument
 
 def resolve_symbol(symbol = None, name = None) -> List:
     if symbol:
@@ -71,11 +72,19 @@ def get_historical_data(args):
             #saving data
             print("\n📁 Saving data...\n")
             time.sleep(3)
-            folder = "./data"
-            os.makedirs(folder, exist_ok = True) #ensure the folder exists
-            file = f"{symbol[i]}_{args.start}_{args.end}_{args.timespan}.csv"
-            file_path = os.path.join(folder, file)
-            save_data(hist_data, file_path)
+
+            #save to csv
+            if args.save_csv == True:
+                folder = "./data"
+                os.makedirs(folder, exist_ok = True) #ensure the folder exists
+                file = f"{symbol[i]}_{args.start}_{args.end}_{args.timespan}.csv"
+                file_path = os.path.join(folder, file)
+                save_data(df = hist_data, symbol = symbol[i], export_csv = args.save_csv, csv_path = file_path)
+
+            #save to db
+            else:
+                upsert_instrument(symbol[i])
+                save_data(hist_data, symbol[i], timespan = args.timespan, export_csv = args.save_csv)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -102,6 +111,7 @@ def main():
     history_parser.add_argument("--multiplier", default = 1, type = int, help = "(Optional) The size of the timespan multiplier")
     history_parser.add_argument("--start", type = str, required = True, help = "Format: [YYYY-MM-DD]")
     history_parser.add_argument("--end", type = str, required = True, help = "Format: [YYYY-MM-DD]")
+    history_parser.add_argument("--save_csv", action = "store_true", default = False, help = "Export fetched data to a CSV file")
     history_parser.set_defaults(func = get_historical_data)
 
     args = parser.parse_args()
