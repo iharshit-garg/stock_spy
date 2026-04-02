@@ -3,7 +3,7 @@ from ticker import Ticker
 from data import get_history, save_data, stats
 import argparse, sys, time, os
 from typing import *
-from db import upsert_instrument
+from db import upsert_instrument, save_risk_snapshot
 
 def resolve_symbol(symbol = None, name = None) -> List:
     if symbol:
@@ -59,8 +59,9 @@ def get_historical_data(args):
             print(f"Average Close: {hist_data["Close"].mean()}")
             
             #volatility, annualized volatility, and max drawdown
+            risk_stats = stats(hist_data)
             percentage_fields = {"volatility", "annualized_volatility", "max_drawdown"}
-            for k, v in stats(hist_data).items():
+            for k, v in risk_stats.items():
                 if k in percentage_fields:
                     print(f"{k}: {v:.2%}")
                 else:
@@ -85,6 +86,7 @@ def get_historical_data(args):
             else:
                 upsert_instrument(symbol[i])
                 save_data(hist_data, symbol[i], timespan = args.timespan, export_csv = args.save_csv)
+                save_risk_snapshot(symbol[i], risk_stats, args.start, args.end)
 
 def main():
     parser = argparse.ArgumentParser(

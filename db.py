@@ -111,6 +111,27 @@ def get_bars(symbol: str, start: str, end: str, timespan: str = "day") -> pd.Dat
     df = df.set_index("Date").sort_index(ascending = True)
     return df
 
+def save_risk_snapshot(symbol: str, stats_dict: dict, period_start: str, period_end: str):
+    sql = """
+        INSERT INTO risk_snapshots
+            (symbol, period_start, period_end, volatility, annualized_volatility, max_drawdown, sharpe_ratio)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (symbol, computed_at) DO NOTHING;
+    """
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (
+                symbol,
+                period_start,
+                period_end,
+                stats_dict["volatility"],
+                stats_dict["annualized_volatility"],
+                stats_dict["max_drawdown"],
+                stats_dict["sharpe_ratio"],
+            ))
+        conn.commit()
+
 if __name__ == "__main__":
     create_tables()
     print("Tables created successfully.")
