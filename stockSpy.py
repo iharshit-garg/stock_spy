@@ -89,6 +89,26 @@ def get_historical_data(args):
                 save_data(hist_data, symbol[i], timespan = args.timespan, export_csv = args.save_csv)
                 save_risk_snapshot(symbol[i], risk_stats, args.start, args.end)
 
+def get_anomalies(args):
+    print(f"\n⏳ Fetching data for '{args.symbol}'\n")
+    df = get_history(args.symbol, args.start, args.end)
+
+    if df is None:
+        sys.exit(f"No data found for {args.symbol}")
+
+    result = detect_anomalies(df, contamination=args.contamination)
+
+    flagged = result[result["rule_flagged"] & result["iso_flagged"] ] 
+
+    print(f"📊 Analyzed {len(result)} trading days")
+    print(f"🚨 High Confidence Anomalies: {len(flagged)}\n")
+
+    if flagged.empty:
+        print("No anomalies found.")
+        return
+
+    print(flagged[["daily_return", "volume_ratio", "price_gap", "iso_score"]])
+
 def main():
     parser = argparse.ArgumentParser(
         prog = "stockSpy",
@@ -116,6 +136,15 @@ def main():
     history_parser.add_argument("--end", type = str, required = True, help = "Format: [YYYY-MM-DD]")
     history_parser.add_argument("--save_csv", action = "store_true", default = False, help = "Export fetched data to a CSV file")
     history_parser.set_defaults(func = get_historical_data)
+
+    #anomaly detection
+    # In main(), add alongside history_parser:
+    anomaly_parser = subparsers.add_parser("anomaly", help="Detect anomalies in price data")
+    anomaly_parser.add_argument("--symbol", type=str, required=True)
+    anomaly_parser.add_argument("--start",  type=str, required=True)
+    anomaly_parser.add_argument("--end",    type=str, required=True)
+    anomaly_parser.add_argument("--contamination", type=float, default=0.05)
+    anomaly_parser.set_defaults(func=get_anomalies)
 
     args = parser.parse_args()
     args.func(args)
