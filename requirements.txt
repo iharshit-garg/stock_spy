@@ -7,3 +7,4 @@ psycopg2-binary==2.9.11
 python-dotenv==1.2.2
 SQLAlchemy==2.0.48
 yfinance==1.2.0
+scikit-learn==1.8.0
