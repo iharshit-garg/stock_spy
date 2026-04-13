@@ -1,4 +1,4 @@
-from client import client
+from stockspy.client import client
 
 def lookup(security_name: str):
     tickers = [] #storing name, symbol for found symbols

@@ -1,6 +1,6 @@
-from client import client
+from stockspy.client import client
+from stockspy import db
 import pandas as pd
-import db
 
 def get_history(stock_name: str, from_date, to_date, timespan = "day", multiplier = 1) -> pd.DataFrame:
     aggs = []

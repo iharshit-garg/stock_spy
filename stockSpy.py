@@ -1,9 +1,10 @@
-from lookup import lookup
-from ticker import Ticker
-from data import get_history, save_data, stats
+from stockspy.data import get_history, save_data, stats
+from stockspy.db import upsert_instrument, save_risk_snapshot
+from stockspy.lookup import lookup
+from stockspy.ticker import Ticker
+from stockspy.anomaly import detect_anomalies
 import argparse, sys, time, os
-from typing import *
-from db import upsert_instrument, save_risk_snapshot
+from typing import List
 
 def resolve_symbol(symbol = None, name = None) -> List:
     if symbol:
