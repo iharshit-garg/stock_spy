@@ -1,201 +1,262 @@
 # StockSpy
 
-StockSpy is a Python command-line tool to **search**, **inspect**, and **analyze** financial instruments using market data APIs. It is designed as a beginner-friendly but quant-minded project that gradually evolves toward more professional tooling (CLI flags, databases, and better risk metrics).
+A Python CLI for fetching, storing, and analyzing financial market data — with built-in anomaly detection for flagging unusual price and volume behavior.
 
+Built on Polygon.io for market data, PostgreSQL for persistence, and scikit-learn's Isolation Forest for anomaly scoring.
 
 ## Features
 
-### 1. Instrument Lookup
+- **Instrument lookup** — search by company name, select from top results interactively
+- **Basic ticker info** — symbol metadata, previous close, day range, 52-week range via yfinance
+- **Historical OHLCV** — fetch daily, hourly, or minute bars via Polygon.io with multi-ticker support
+- **Risk & performance stats** — volatility, annualized volatility, max drawdown, Sharpe ratio
+- **PostgreSQL persistence** — all bars and risk snapshots stored; no re-fetching the same data twice
+- **Anomaly detection** — rule-based (Z-score, volume spike, price gap) + Isolation Forest scoring
+- **Optional CSV export** — export any fetch to a timestamped CSV with `--export-csv`
 
-- Search by plain name (e.g., `Apple`, `Nvidia`) and instrument type (`stock`, `etf`, `index`, `cryptocurrency`).
-- Display top candidates (symbol + short name).
-- Let the user interactively choose the correct symbol.
-- Return the chosen symbol to be used by the rest of the tool.
+## Tech Stack
 
-### 2. Basic Ticker Information
-
-- Given a symbol (e.g., `AAPL`), fetch basic metadata:
-  - Symbol
-  - Short name
-  - Previous close
-  - Open
-  - Day low / day high
-  - 52-week low / 52-week high
-  - All-time high / all-time low (when available)
-- Data is returned as a Python dictionary and then printed by the CLI.
-
-### 3. Historical Price Data
-
-- Fetch historical OHLCV data for a single symbol:
-  - Configurable `period` (e.g. `1mo`, `3mo`, `1y`, `max`).
-  - Configurable `interval` (e.g. `1d`, `1wk`, `1mo`, or intraday).
-- Summary output:
-  - Total number of rows.
-  - First bar (first timestamp).
-  - Last bar (most recent bar).
-- Basic price statistics:
-  - Highest high over the period.
-  - Lowest low over the period.
-  - Average closing price over the period.
-
-### 4. Risk & Performance Statistics
-
-Given a DataFrame of historical prices (with at least a `Close` column), the project computes:
-
-- Daily returns using percentage change on close prices.
-- **Volatility**: standard deviation of daily returns (in decimal form).
-- **Annualized volatility**: daily volatility scaled by \(\sqrt{252}\), representing yearly volatility in decimal form.
-- **Max drawdown**: worst peak-to-trough decline, computed from the running maximum of the close price, expressed as a negative decimal (e.g. `-0.35` for -35%).
-
-These statistics are returned as a dictionary and can be extended with more metrics over time (e.g. Sharpe Ratio, Sortino Ratio, CAGR, etc.).
-
-### 5. Data Export (CSV)
-
-- After fetching and summarizing historical data, StockSpy can save the DataFrame to CSV.
-- Filenames follow a consistent naming scheme:
-  - `<SYMBOL>_<PERIOD>_<INTERVAL>.csv`
-- This allows offline analysis and re-use of the same data without refetching from the API.
-
+| Layer | Tool |
+|---|---|
+| Market data (OHLCV) | Polygon.io REST API (`polygon-api-client`) |
+| Ticker metadata | yfinance |
+| Database | PostgreSQL + psycopg2 |
+| Schema migrations | Alembic |
+| Anomaly detection | scikit-learn `IsolationForest`, pandas rolling stats |
+| CLI | argparse |
+| Environment config | python-dotenv |
 
 ## Project Structure
 
-A high-level overview of the modules:
+```
+stock_spy/
+├── stockspy/
+│   ├── client.py       # Polygon.io REST client singleton
+│   ├── data.py         # get_history(), save_data(), stats()
+│   ├── db.py           # PostgreSQL connection, upsert_bars(), get_bars(), save_risk_snapshot()
+│   ├── lookup.py       # Interactive symbol search via Polygon.io
+│   ├── ticker.py       # Basic ticker metadata via yfinance
+│   └── anomaly.py      # Feature engineering, rule-based flags, Isolation Forest scorer
+│
+├── fraud_detector/     # Planned extension — order matching + fraud scoring
+│
+├── migrations/         # Alembic migration scripts
+│   └── versions/
+│
+├── tests/
+│   ├── conftest.py
+│   ├── test_data.py
+│   ├── test_db.py
+│   ├── test_lookup.py
+│   ├── test_ticker.py
+│   └── test_anomaly.py
+│
+├── stockSpy.py         # CLI entry point
+├── alembic.ini
+├── pytest.ini
+├── requirements.txt
+└── .env                # API keys and DB URL (not committed)
+```
 
-- `stockSpy.py`  
-  Main CLI entry point. Handles:
-  - Menu / user interaction.
-  - Symbol lookup or direct symbol input.
-  - Routing to:
-    - Basic info (`Ticker`).
-    - Historical data (`get_history` + summary + stats).
-  - Calling `save_data` to export CSVs.
+## Database Schema
 
-- `lookup.py`  
-  Provides `lookup(security_name, instrument_type)`:
-  - Uses the API’s lookup/search functionality to retrieve candidates as a DataFrame.
-  - Checks if the DataFrame is empty.
-  - Displays the top N (e.g. 10) `shortName` entries with their symbols.
-  - Lets the user choose a symbol by index and returns the selected symbol.
-  - Returns `None` if type is invalid or no results are found.
+Three tables managed via Alembic migrations:
 
-- `ticker.py`  
-  Wraps a single instrument:
-  - Initializes a ticker object for a given symbol.
-  - `get_basic_info()`:
-    - Builds a dictionary from selected fields of the ticker’s `info` dict.
-    - Uses `.get()` to avoid key errors when a field is missing.
+**`instruments`** — one row per symbol, reference table for all price data
 
-- `data.py`  
-  Historical data layer:
-  - `get_history(stock_name, period="1mo", interval="1d", ...)`:
-    - For a single symbol: uses `Ticker.history()` to get OHLCV.
-    - For multiple symbols: uses a multi-ticker call (prepared for future multi-symbol support).
-    - Returns `None` if the resulting DataFrame is empty.
-  - `save_data(df, file_name)`:
-    - Saves the given DataFrame to a CSV file.
-    - Prints the path/name of the saved file to the user.
-  - `stats(df)`:
-    - Encapsulates calculations like:
-        - Daily returns.
-        - Volatility and annualized volatility.
-        - Max drawdown.
-        - Future metrics: Sharpe Ratio, Sortino Ratio, etc.
+**`ohlcv_bars`** — historical OHLCV bars with composite primary key `(symbol, timestamp, timespan)`, preventing duplicate inserts on re-fetch
 
+**`risk_snapshots`** — computed stats (volatility, Sharpe, drawdown) persisted per symbol per fetch window
 
-## Current Workflow
-
-1. Start the program.
-2. Choose a menu option:
-   - `[1] Basic Info`
-   - `[2] Historical Prices`
-3. Decide whether you know the symbol:
-   - If **no**:
-     - Enter a name (`Apple`) and instrument type (`stock`, `etf`, etc.).
-     - Use `lookup()` to select the symbol from top results.
-   - If **yes**:
-     - Enter the symbol directly (`AAPL`, `VOOG`).
-4. For **Basic Info**:
-   - Fetch and display key ticker fields.
-5. For **Historical Prices**:
-   - Enter `period` and `interval`.
-   - Fetch OHLCV data.
-   - If data is found:
-     - Print row count, first bar, last bar.
-     - Print highest high, lowest low, average close.
-     - Compute and print volatility / annualized volatility / max drawdown.
-     - Save the full DataFrame to CSV.
-
-
-## Planned Improvements
-
-The following tasks are planned to evolve StockSpy from a simple educational tool into a more robust and extensible application.
-
-### 1. Replace yfinance with Polygon.io API
-
-- **Goal**: Use Polygon.io as the primary market data provider.
-- **Why**:
-  - More consistent and reliable data for equities, crypto, and other asset classes.
-  - Better suited for intraday and potentially higher-frequency use cases.
-
-### 2. Replace Menu-Based CLI with Argparse
-
-- **Goal**: Turn StockSpy into a script that can be called with flags, e.g.:
-  - `python stockSpy.py --info --symbol AAPL`
-  - `python stockSpy.py --history --symbol AAPL --period 1y --interval 1d`
-- **Why**:
-  - Easier automation and integration into other tools or shell scripts.
-  - More “Unix-like” and professional interface.
-
-### 3. Replace CSV with PostgreSQL
-
-- **Goal**: Persist price history and statistics in PostgreSQL instead of flat CSV files.
-- **Why**:
-  - Better queryability (e.g., multi-asset queries, time-window filters, joining with other datasets).
-  - More realistic for production-like quant infrastructure.
-
-### 4. Logging
-
-- **Goal**: Add structured logging instead of relying only on `print`.
-- **Why**:
-  - Easier debugging and introspection.
-  - Better separation between user-facing output and developer diagnostics.
-- **Tasks**:
-  - Introduce a logging setup (levels such as DEBUG, INFO, WARNING, ERROR).
-
-### 5. Fix Variable Naming Scheme
-
-- **Goal**: Enforce a consistent, Pythonic naming convention.
-- **Why**:
-  - Improves readability and maintainability.
-  - Makes the project more approachable for contributors.
-
-### 6. Input Validation for `data_period` & `data_interval`
-
-- **Goal**: Prevent invalid period/interval combinations from reaching the API.
-- **Why**:
-  - Better user experience: show helpful error messages instead of API error traces.
-  - More robust code that fails early and clearly.
-
-
-## Roadmap Ideas
-
-Beyond the listed issues, possible future enhancements:
-
-- Add more risk/return metrics:
-  - Sharpe Ratio, Sortino Ratio, Calmar Ratio, CAGR.
-- Implement a watchlist system:
-  - Store symbol + threshold rules.
-  - Periodically fetch latest prices and trigger alerts (console, email, etc.).
-- Add plotting:
-  - Basic price charts (Close over time).
-  - Overlay moving averages or volatility bands.
-
+```sql
+-- Example: rank symbols by Sharpe ratio across a period
+SELECT symbol, period_start, period_end, sharpe_ratio, max_drawdown
+FROM risk_snapshots
+ORDER BY sharpe_ratio DESC;
+```
 
 ## Getting Started
 
-1. Clone the repository.
-2. Create and activate a virtual environment.
-3. Install dependencies (e.g. `yfinance`, `pandas`, and others listed in `requirements.txt`).
-4. Run the script:
-   - Current mode: interactive CLI.
-   - Future mode: argparse-driven CLI with flags and subcommands.
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/iharshit-garg/stock_spy.git
+cd stock_spy
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # macOS/Linux
+.venv\Scripts\activate           # Windows
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+Create a `.env` file in the project root:
+
+```
+API_KEY=your_polygon_io_api_key_here
+DATABASE_URL=postgresql://postgres:password@localhost:5432/stockspy
+```
+
+Get a free Polygon.io API key at [polygon.io](https://polygon.io).
+
+### 5. Start PostgreSQL
+
+```bash
+docker run -d --name stockspy-db \
+  -e POSTGRES_PASSWORD=password \
+  -p 5432:5432 postgres:16
+```
+
+### 6. Run migrations
+
+```bash
+alembic upgrade head
+```
+
+## Usage
+
+### Fetch basic ticker info
+
+```bash
+# By symbol
+python stockSpy.py info --symbol AAPL
+
+# By name (interactive search)
+python stockSpy.py info --name "Apple"
+```
+
+### Fetch historical data
+
+```bash
+# Daily bars, single ticker
+python stockSpy.py history --symbol AAPL --start 2024-01-01 --end 2024-12-31
+
+# Hourly bars
+python stockSpy.py history --symbol TSLA --start 2024-06-01 --end 2024-12-31 \
+  --timespan hour --multiplier 1
+
+# Multi-ticker (rate-limit handled automatically)
+python stockSpy.py history --symbol AAPL,MSFT,NVDA --start 2024-01-01 --end 2024-12-31
+
+# Also export to CSV
+python stockSpy.py history --symbol AAPL --start 2024-01-01 --end 2024-12-31 --export-csv
+```
+
+### Anomaly detection
+
+```bash
+python stockSpy.py anomaly --symbol AAPL --start 2024-01-01 --end 2025-12-31
+```
+
+Example output:
+
+```
+⏳ Fetching data for 'AAPL'
+
+📊 Analyzed 415 trading days
+🚨 Anomalies detected: 21
+
+                     daily_return  volume_ratio  price_gap  iso_score  rule_flagged  iso_flagged
+Date
+2025-04-03 04:00:00     -0.092456      1.823617  -0.081960  -0.174535          True         True
+2025-04-09 04:00:00      0.153288      2.341022   0.067070  -0.225843          True         True
+2025-08-06 04:00:00      0.050907      1.102341   0.013210  -0.071325         False         True
+```
+
+Days where both `rule_flagged` and `iso_flagged` are `True` are highest-confidence anomalies confirmed by two independent methods.
+
+## CLI Reference
+
+### `info`
+
+| Argument | Required | Description |
+|---|---|---|
+| `--symbol` | One of these | Ticker symbol (e.g. `AAPL`) |
+| `--name` | One of these | Company name — triggers interactive lookup |
+
+### `history`
+
+| Argument | Required | Default | Description |
+|---|---|---|---|
+| `--symbol` | One of these | — | Ticker symbol, comma-separated for multi |
+| `--name` | One of these | — | Company name — triggers interactive lookup |
+| `--start` | Yes | — | Start date `YYYY-MM-DD` |
+| `--end` | Yes | — | End date `YYYY-MM-DD` |
+| `--timespan` | No | `day` | Bar size: `second / minute / hour / day / week / month` |
+| `--multiplier` | No | `1` | Timespan multiplier (e.g. `4` for 4-hour bars) |
+| `--export-csv` | No | `False` | Also export fetched data to `./data/` |
+
+### `anomaly`
+
+| Argument | Required | Default | Description |
+|---|---|---|---|
+| `--symbol` | Yes | — | Ticker symbol |
+| `--start` | Yes | — | Start date `YYYY-MM-DD` |
+| `--end` | Yes | — | End date `YYYY-MM-DD` |
+| `--contamination` | No | `0.05` | Isolation Forest contamination rate (0.01–0.10) |
+
+
+## Anomaly Detection
+
+Two independent detection layers run on every `anomaly` command:
+
+**Rule-based (explicit thresholds)**
+| Rule | Signal | Default Threshold |
+|---|---|---|
+| Return Z-score | Daily return vs rolling 20-day mean/std | `\|z\| > 3.0` |
+| Volume spike | Today's volume vs 20-day average | `> 3.0x` |
+| Price gap | Overnight open vs prior close | `\|gap\| > 2%` |
+
+**Model-based (Isolation Forest)**
+
+Five engineered features fed to `IsolationForest`:
+- Daily return
+- Volume ratio (vs 20-day rolling mean)
+- Overnight price gap
+- Intraday high-low range normalized by close
+- Rolling 20-day return Z-score
+
+Features are standardized with `StandardScaler` before fitting. The model flags the `contamination` fraction of days as anomalous based on multi-feature isolation depth. Days flagged by both layers are highest-confidence anomalies.
+
+## Data Sources & Limitations
+
+- **Polygon.io free tier**: 5 requests/minute, 15-minute delayed quotes, ~2 years of history. Multi-ticker requests are throttled automatically with a 12-second sleep between symbols.
+- **yfinance**: Used only for `info` command metadata. No API key required but subject to Yahoo Finance availability.
+
+## Roadmap
+
+### In Progress
+- [ ] `test_anomaly.py` — unit tests for rule functions and feature engineering
+- [ ] `save_anomalies()` — persist flagged rows to a new `anomaly_flags` table
+- [ ] GitHub Actions CI — run pytest on every push
+
+### Planned
+- [ ] **Fraud Detector extension** — order matching engine + synthetic transaction pipeline + fraud scoring layer reusing the anomaly engine
+- [ ] **Backtesting engine** — vectorized signal → position → PnL simulation with Sharpe, CAGR, equity curve output
+- [ ] **Watchlist + alerts** — scheduled polling with Slack/Discord webhook notifications
+- [ ] **Logging** — replace `print` with structured `logging` (DEBUG/INFO/WARNING/ERROR)
+- [ ] **Visualizations** — price charts with anomaly overlays via `matplotlib`/`plotly`
+
+### Done ✅
+- [x] Polygon.io REST API integration (lookup + OHLCV)
+- [x] yfinance hybrid for ticker metadata
+- [x] argparse subcommand CLI (`info`, `history`, `anomaly`)
+- [x] PostgreSQL schema with Alembic migrations
+- [x] `ohlcv_bars` + `instruments` + `risk_snapshots` tables
+- [x] `ON CONFLICT DO NOTHING` deduplication on re-fetch
+- [x] Risk stats: volatility, annualized volatility, max drawdown, Sharpe ratio
+- [x] Auto-persist risk snapshots per fetch window
+- [x] Multi-ticker support with rate-limit handling
+- [x] Rule-based anomaly detection (Z-score, volume spike, price gap)
+- [x] Isolation Forest anomaly scoring with StandardScaler
+- [x] Optional CSV export with `--export-csv`
