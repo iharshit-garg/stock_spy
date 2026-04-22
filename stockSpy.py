@@ -1,5 +1,5 @@
 from stockspy.data import get_history, save_data, stats
-from stockspy.db import upsert_instrument, save_risk_snapshot
+from stockspy.db import upsert_instrument, save_risk_snapshot, save_anomalies
 from stockspy.lookup import lookup
 from stockspy.ticker import Ticker
 from stockspy.anomaly import detect_anomalies
@@ -108,6 +108,9 @@ def get_anomalies(args):
         return
 
     print(flagged[["daily_return", "volume_ratio", "price_gap", "iso_score"]])
+
+    upsert_instrument(args.symbol) #perform upsert on instrument table
+    save_anomalies(result, args.symbol) #save anomalies data to anomaly_flags
 
 def main():
     parser = argparse.ArgumentParser(

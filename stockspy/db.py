@@ -14,45 +14,6 @@ def get_connection():
         _conn = psycopg2.connect(os.environ["DATABASE_URL"])
     return _conn
 
-def create_tables():
-    sql = """
-    CREATE TABLE IF NOT EXISTS instruments (
-        symbol       VARCHAR PRIMARY KEY,
-        name         VARCHAR,
-        asset_class  VARCHAR,
-        exchange     VARCHAR,
-        created_at   TIMESTAMPTZ DEFAULT NOW()
-    );
-
-    CREATE TABLE IF NOT EXISTS ohlcv_bars (
-        symbol      VARCHAR NOT NULL REFERENCES instruments(symbol),
-        timestamp   TIMESTAMPTZ NOT NULL,
-        timespan    VARCHAR NOT NULL,
-        open        NUMERIC(12,4),
-        high        NUMERIC(12,4),
-        low         NUMERIC(12,4),
-        close       NUMERIC(12,4),
-        volume      BIGINT,
-        PRIMARY KEY (symbol, timestamp, timespan)
-    );
-
-    CREATE TABLE IF NOT EXISTS risk_snapshots (
-        symbol               VARCHAR NOT NULL REFERENCES instruments(symbol),
-        computed_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        period_start         TIMESTAMPTZ,
-        period_end           TIMESTAMPTZ,
-        volatility           NUMERIC(10,6),
-        annualized_volatility NUMERIC(10,6),
-        max_drawdown         NUMERIC(10,6),
-        sharpe_ratio         NUMERIC(10,6),
-        PRIMARY KEY (symbol, computed_at)
-    );
-    """
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql)
-        conn.commit()
-
 def upsert_instrument(symbol: str, name: str = None, asset_class: str = None, exchange: str = None):
     sql = """
         INSERT INTO instruments (symbol, name, asset_class, exchange)
@@ -131,6 +92,45 @@ def save_risk_snapshot(symbol: str, stats_dict: dict, period_start: str, period_
                 stats_dict["sharpe_ratio"],
             ))
         conn.commit()
+
+def save_anomalies(result: pdf.DataFrame, symbol: str):
+    flagged = result[result["rule_flagged"] & result["iso_flagged"] == True] #only saving high confidence anomalies
+
+    if flagged.empty:
+        print("No anomalies to save.")
+
+    rows = [
+        (
+            symbol, 
+            index.to_pydatetime(),
+            float(row["daily_return"]),
+            float(row["volume_ratio"]),
+            float(row["price_gap"]),
+            float(row["hl_range"]),
+            float(row["return_zscore"]),
+            float(row["iso_score"]),
+            bool(row["rule_flagged"]),
+            bool(row["iso_flagged"]),
+            bool(row["anomaly"]),
+        )
+        for index, row in flagged.iterrows()
+    ]
+    sql  = """
+        INSERT INTO anomaly_flags (
+        symbol, timestamp, daily_return, volume_ratio, price_gap, hl_range, return_zscore,
+        iso_score, rule_flagged, iso_flagged, anomaly
+    )
+    VALUES %s
+    ON CONFLICT (symbol, timestamp) DO NOTHING;
+    """
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            execute_values(cur, sql, rows)
+        conn.commit()
+    
+    print(f"💾 {len(rows)} anomaly flag(s) saved to database.")
+
 
 if __name__ == "__main__":
     create_tables()

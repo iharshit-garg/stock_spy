@@ -33,7 +33,7 @@ stock_spy/
 ├── stockspy/
 │   ├── client.py       # Polygon.io REST client singleton
 │   ├── data.py         # get_history(), save_data(), stats()
-│   ├── db.py           # PostgreSQL connection, upsert_bars(), get_bars(), save_risk_snapshot()
+│   ├── db.py           # PostgreSQL connection, upsert_bars(), get_bars(), save_risk_snapshot(), save_anomalies(), upsert_instrument()
 │   ├── lookup.py       # Interactive symbol search via Polygon.io
 │   ├── ticker.py       # Basic ticker metadata via yfinance
 │   └── anomaly.py      # Feature engineering, rule-based flags, Isolation Forest scorer
@@ -60,13 +60,15 @@ stock_spy/
 
 ## Database Schema
 
-Three tables managed via Alembic migrations:
+Four tables managed via Alembic migrations:
 
 **`instruments`** — one row per symbol, reference table for all price data
 
 **`ohlcv_bars`** — historical OHLCV bars with composite primary key `(symbol, timestamp, timespan)`, preventing duplicate inserts on re-fetch
 
 **`risk_snapshots`** — computed stats (volatility, Sharpe, drawdown) persisted per symbol per fetch window
+
+**`anomaly_flags`** — flagged bars with feature values, Isolation  Forest score, rule and model flag columns, and `detected_at` timestamp. Composite Primary key `(symbol, timestamp)`
 
 ```sql
 -- Example: rank symbols by Sharpe ratio across a period
@@ -235,11 +237,6 @@ Features are standardized with `StandardScaler` before fitting. The model flags 
 
 ## Roadmap
 
-### In Progress
-- [ ] `test_anomaly.py` — unit tests for rule functions and feature engineering
-- [ ] `save_anomalies()` — persist flagged rows to a new `anomaly_flags` table
-- [ ] GitHub Actions CI — run pytest on every push
-
 ### Planned
 - [ ] **Fraud Detector extension** — order matching engine + synthetic transaction pipeline + fraud scoring layer reusing the anomaly engine
 - [ ] **Backtesting engine** — vectorized signal → position → PnL simulation with Sharpe, CAGR, equity curve output
@@ -248,6 +245,8 @@ Features are standardized with `StandardScaler` before fitting. The model flags 
 - [ ] **Visualizations** — price charts with anomaly overlays via `matplotlib`/`plotly`
 
 ### Done ✅
+- [x] Anomaly flags persisted to anomaly_flags table via save_anomalies()
+- [x] Alembic migration for anomaly_flags table
 - [x] Polygon.io REST API integration (lookup + OHLCV)
 - [x] yfinance hybrid for ticker metadata
 - [x] argparse subcommand CLI (`info`, `history`, `anomaly`)
